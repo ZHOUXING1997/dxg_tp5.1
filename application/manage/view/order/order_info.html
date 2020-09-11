@@ -1,0 +1,237 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义header-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .layui-container label {
+        width: 200px !important;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/Activity/doSave')}" method="post" lay-filter="orderInfo">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="main_order_id" value="{$mainOrderId}">
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_no" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>主订单号
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_no" name="main_order_no" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_status_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>订单状态
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_status_title" name="main_order_status_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_total_fee" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>订单总金额
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_total_fee" name="main_order_total_fee" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_amount_payable" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>订单应付金额
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_amount_payable" name="main_order_amount_payable" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_payment" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>订单支付金额
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_payment" name="main_order_payment" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_pay_type_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>订单支付方式
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="main_order_pay_type_title" name="main_order_pay_type_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="sub_count" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>子订单数量
+                </label>
+                <div class="layui-col-md4">
+                    <input type="text" id="sub_count" name="sub_count" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-col-md2 layui-col-md-offset2">
+                    <a href="{:url('Manage/Order/subOrderInfo', ['main_order_id' => $mainOrderId, 'main_order_no' => $mainNo])}" class="layui-btn"> 查看子订单信息 </a>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="delivery_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>配送方式
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="delivery_title" name="delivery_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="delivery_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>配送人
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="delivery_name" name="delivery_name" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_info" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>地址信息
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_info" name="main_order_address_info" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset5">
+                    <button type="button" class="layui-btn layui-btn-normal" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    layui.use(['form', 'layer', 'laydate'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("orderInfo", JSON.parse('{:urldecode($data)}'));
+        $("input").attr('readonly', true).attr('disabled', true);
+        form.render();
+
+        //自定义验证规则
+        form.verify({
+            price: function (value) {
+                if (value < 1 || value > 999999) {
+                    return '价格需要在1-999999之间';
+                }
+            },
+            sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            },
+            stock: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '库存数值请在1-99999';
+                }
+            },
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+
+        laydate.render({
+            elem: '#start_t',
+            min: new Date().toLocaleString(),
+        });
+
+        laydate.render({
+            elem: '#end_t',
+            min: new Date().toLocaleString() + 1,
+        });
+
+        laydate.render({
+            elem: '#start_time',
+            type: "time",
+        });
+
+        laydate.render({
+            elem: '#end_time',
+            type: "time",
+        });
+    });
+
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

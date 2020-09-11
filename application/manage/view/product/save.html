@@ -1,0 +1,583 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    textarea {
+        resize: none !important;
+    }
+    
+    .detail_tips {
+        text-align: center;
+        font-size: 16px;
+    }
+    
+    .layui-table {
+        text-align: center;
+    }
+    
+    .td-action {
+        text-align: left;
+    }
+    
+    .up-image[data-up='true'] {
+        color: #5FB878;
+    }
+    
+    .product-attribute {
+        /*margin-bottom: 5px;*/
+    }
+    
+    .layui-form-pane .layui-form-label{
+        width: 150px;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/Product/doSave')}" method="post"
+          lay-filter="productSave">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="product_id" value="{$productId}">
+                <input type="hidden" name="product_code" value="{$data.product_code|default=''}">
+            </div>
+    
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+            
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>商品分类
+                </label>
+                <div class="layui-col-md5">
+                    <select name="cate_id" lay-verify="required" xm-select="cate-lists" xm-select-search="" xm-select-max="" xm-select-radio>
+                        <option value="" disabled>请选择分类，可进行搜索</option>
+                    </select>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <!--                    <span class="x-red">*</span>将会成为您唯一的登入名-->
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>商品名称
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="product_title" name="product_title" lay-verify="required" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-20个字符
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="product_tag" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>标签
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" id="product_tag" name="product_tag" maxlength="100" lay-verify=""
+                              placeholder="首页查询时关键字(100字以内)，英文逗号(,)分割。非必填" cols="24" rows="3"
+                              autocomplete="off"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>关键字(100字以内)，英文逗号(,)分割。非必填
+                </div>
+            </div>
+            
+            <!--<div class="layui-form-item layui-row">-->
+            <!--    <label for="product_code" class="layui-form-label layui-col-md3">-->
+            <!--        <span class="x-red">*</span>商品货号-->
+            <!--    </label>-->
+            <!--    <div class="layui-col-md5">-->
+            <!--        <input type="text" id="product_code" name="product_code" lay-verify="required" autocomplete="off"-->
+            <!--               class="layui-input">-->
+            <!--    </div>-->
+            <!--    <div class="layui-form-mid layui-word-aux layui-col-md-offset1">-->
+            <!--        <span class="x-red">*</span>1-20个字符，可用：字母和数字，下划线_及破折号- -->
+            <!--    </div>-->
+            <!--</div>-->
+            
+            <!--<div class="layui-form-item layui-row">-->
+            <!--    <label for="product_price" class="layui-form-label layui-col-md3">-->
+            <!--        <span class="x-red">*</span>商品价格-->
+            <!--    </label>-->
+            <!--    <div class="layui-col-md5">-->
+            <!--        <input type="text" id="product_price" name="product_price" lay-verify="required|price" autocomplete="off"-->
+            <!--               class="layui-input">-->
+            <!--    </div>-->
+            <!--    <div class="layui-form-mid layui-word-aux layui-col-md-offset1">-->
+            <!--        <span class="x-red">*</span>1-999999-->
+            <!--    </div>-->
+            <!--</div>-->
+            
+            <div class="layui-form-item layui-row">
+                <label class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>商品属性
+                </label>
+                <div class="layui-col-md6">
+                    <div class="detail_tips">单个属性或者多个属性但型号一样,无需填写型号；规格	价格必填</div>
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" onclick="addAttribute(this)">
+                        添加属性
+                    </button>
+                </div>
+                <div class="layui-col-md9">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th width="170px">型号(不能重复)</th>
+                            <th>规格</th>
+                            <th width="90px">价格</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody class="product-attribute-list">
+                        {if empty($attribute) }
+                            <tr>
+                                <td>
+                                    <input type="text" name="product_attribute[0][attr_code]"
+                                           autocomplete="off" class="layui-input product-attribute product-attr-code" lay-verify="product_attr_code"
+                                           placeholder="请输入10个字符以内" maxlength="10" value="">
+                                </td>
+                                <td>
+                                    <input type="text" name="product_attribute[0][attr_type]"
+                                           autocomplete="off" class="layui-input product-attribute" lay-verify="required"
+                                           placeholder="请输入20个字符以内" maxlength="20" value="">
+                                </td>
+                                <td>
+                                    <input type="number" name="product_attribute[0][attr_price]"
+                                           autocomplete="off" class="layui-input product-attribute" lay-verify="required|price"
+                                           placeholder="1-999999" maxlength="5" value="">
+                                </td>
+                                <td>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger"
+                                            onclick="delAttribute(this)">删除
+                                    </button>
+                                </td>
+                            </tr>
+                        {else /}
+                            {foreach $attribute as $k => $ao }
+                                <tr>
+                                    <td>
+                                        <input type="text" readonly disabled name="product_attribute[{$k}][attr_code]"
+                                               autocomplete="off" class="layui-input product-attribute product-attr-code" lay-verify="product_attr_code"
+                                               placeholder="请输入10个字符以内" maxlength="10" value="{$ao.attr_code}">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="product_attribute[{$k}][attr_type]"
+                                               autocomplete="off" class="layui-input product-attribute" lay-verify="required"
+                                               placeholder="请输入20个字符以内" maxlength="20" value="{$ao.attr_type}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="product_attribute[{$k}][attr_price]"
+                                               autocomplete="off" class="layui-input product-attribute" lay-verify="required|price"
+                                               placeholder="1-999999" maxlength="5" value="{$ao.attr_price}">
+                                    </td>
+                                    <td>
+                                        <button type="button" class="layui-btn layui-btn-sm layui-btn-danger"
+                                                onclick="delAttribute(this)">删除
+                                        </button>
+                                    </td>
+                                </tr>
+                            {/foreach}
+                        {/if}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+    
+            <!--<div class="layui-form-item layui-row">
+                <label class="layui-form-label layui-col-md3"><span class="x-red">*</span>库存验证</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="product_is_verify_stock" lay-skin="switch" lay-filter="switch" lay-text="开|关" value="1">
+                </div>
+            </div>-->
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_stock" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>库存
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="product_stock" name="product_stock" lay-verify="required|product_stock" autocomplete="off"
+                           class="layui-input" value="1">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>最小为1, 上限为：9999999，库存验证为关的话，库存不生效
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="product_description" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>商品描述
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" id="product_description" name="product_description" maxlength="200" lay-verify=""
+                              placeholder="请填写商品描述（200字以内），非必填" cols="24" rows="3" autocomplete="off"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>商品描述（200字以内），非必填
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_cover_img" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>封面图
+                </label>
+                <div class="layui-upload">
+                    <button type="button" class="layui-btn layui-col-xs-offset1" id="up-cover-img">上传图片</button>
+                    <!--                    <input type="file" accept="image/*" />-->
+                    <div class="upload-img layui-col-md5">
+                        <img height="80px" class="cover-img" src="">
+                        <input type="hidden" lay-verify="required" name="product_cover_img" id="product_cover_img" value="">
+                    </div>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <!--                <span class="x-red">*</span>数值越大越靠前-->
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_preview_img" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>商品预览图
+                </label>
+                <div class="layui-upload layui-col-md6">
+                    <!--<button type="button" class="layui-btn" id="detailImgStartAction">开始上传</button>-->
+                    <div class="detail_tips">您图片的上传顺序将作为页面显示顺序</div>
+                    <input id="product_preview_img" type="hidden" name="product_preview_img" value="">
+                </div>
+                <div class="layui-col-md-offset1">
+                    <button type="button" class="layui-btn layui-btn-normal" id="up-preview-img">选择多文件</button>
+                    <label class="file-count">0</label> / <label class="preview-img-file-total-count">5</label>
+                </div>
+                <div class="layui-col-md9 img-list">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>文件名</th>
+                            <th>图片预览</th>
+                            <th width="60px">大小</th>
+                            <th width="50px">状态</th>
+                            <th width="150px">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="previewImageList"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_detail_img" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>详情页图片
+                </label>
+                <div class="layui-upload layui-col-md6">
+                    <!--<button type="button" class="layui-btn" id="detailImgStartAction">开始上传</button>-->
+                    <div class="detail_tips">您图片的上传顺序将作为页面显示顺序</div>
+                    <input id="product_detail_img" type="hidden" name="product_detail_img" value="">
+                </div>
+                <div class="layui-col-md-offset1">
+                    <button type="button" class="layui-btn layui-btn-normal" id="up-detail-img">选择多文件</button>
+                    <label class="file-count">0</label> / <label class="detail-img-file-total-count">5</label>
+                </div>
+                <div class="layui-col-md9 img-list">
+                    <table class="layui-table">
+                        <thead>
+                        <tr>
+                            <th>文件名</th>
+                            <th>图片预览</th>
+                            <th width="60px">大小</th>
+                            <th width="50px">状态</th>
+                            <th width="150px">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="detailImageList"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="product_sort" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>排序
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="product_sort" name="product_sort" lay-verify="required|sort" autocomplete="off"
+                           class="layui-input" value="10">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>数值越大越靠前,最大为：99999
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label class="layui-form-label layui-col-md3">会员专属</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="product_is_vip_exclusive" lay-skin="switch" lay-filter="switch" lay-text="开|关"
+                           value="0">
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="product_note" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>商品备注(内部)
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" id="product_note" name="product_note" maxlength="200" lay-verify=""
+                              placeholder="请填写商品备注（200字以内），非必填" cols="24" rows="5" autocomplete="off"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>商品备注（200字以内），非必填
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+                    
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    $('.img-delete').on('click', function () {
+        $(this).parents('tr').remove();
+        // TODO 更新图片数量
+    });
+</script>
+
+<script>
+    layui.use(['form', 'layer', 'formSelects'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            formSelects = layui.formSelects;
+
+        formSelects.data('cate-lists', 'local', {
+            arr: JSON.parse('{:json_encode($cateLists)}')
+        });
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        var formData = JSON.parse('{:json_encode($data)}');
+        if (formData != null) {
+            form.val("productSave", formData);
+            $('.cover-img').attr('src', formData['product_cover_img_url']);
+
+            // 详情页图片列表
+            imgList('#detailImageList', formData['product_detail_img_info'], 'product_detail_img_ids');
+            imgList('#previewImageList', formData['product_preview_img_info'], 'product_preview_img_ids');
+        }
+
+        //自定义验证规则
+        form.verify({
+            price: function (value) {
+                if (value < 1 || value > 999999) {
+                    return '价格需要在1-999999之间';
+                }
+            },
+            sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            },
+            product_stock: function (value) {
+                if (value < 1 || value > 99999999) {
+                    return '库存数值请在1-99999999';
+                }
+            },
+            product_attr_code:function (value, item) {
+                num = 0;
+                $('.product-attr-code').each(function () {
+                    if (value && value === $(this).val()) {
+                        num++;
+                    }
+                });
+                if (num > 1) {
+                    return '输入了相同的商品属性';
+                }
+            }
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            if ($(".up-image[data-up=false]").length > 0) {
+                //配置一个透明的询问框
+                layer.confirm('您还有图片未上传完成,是否继续提交', {
+                    btn: ['取消', '确认'], //可以无限个按钮
+                    time: 5000,
+                }, function (index) {
+                    layer.close(index);
+                    //按钮【按钮一】的回调
+                }, function (index) {
+                    //按钮【按钮二】的回调
+                    formAjax(data,
+                        function (result) {
+                            console.log('成功');
+                            setTimeout(function () {
+                                window.parent.location.reload();
+                            }, 2000)
+                        }, function (result) {
+                            console.log('失败');
+                            // setTimeout(function () {
+                            //     window.parent.location.reload();
+                            // }, 2000)
+                        });
+                });
+            } else {
+                formAjax(data,
+                    function (result) {
+                        console.log('成功');
+                        setTimeout(function () {
+                            window.parent.location.reload();
+                        }, 2000)
+                    }, function (result) {
+                        console.log('失败');
+                        // setTimeout(function () {
+                        //     window.parent.location.reload();
+                        // }, 2000)
+                    });
+            }
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+    });
+</script>
+
+<script>
+    window.onload = function () {
+        // 单图上传，封面
+        // elem, url, fileSize, accept, acceptMime, suffix
+        upFile('#up-cover-img', "{:url('Open/UpFile/upload')}", global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+        // 多图上传, 详情页
+        // elem, imageList, url, formKey, startAction, fileNum, fileSize, accept, suffix
+        upManyFile('#up-detail-img', '#detailImageList', "{:url('Open/UpFile/upload')}", 'product_detail_img_ids', '#detailImgStartAction', global.product.product_detail_img_num_max, global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+        // 多图上传, 预览图
+        upManyFile('#up-preview-img', '#previewImageList', "{:url('Open/UpFile/upload')}", 'product_preview_img_ids', '#previewImgStartAction', global.product.product_preview_img_num_max, global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+
+        $(function () {
+            $('.detail-img-file-total-count').text(global.product.product_detail_img_num_max);
+            $('.preview-img-file-total-count').text(global.product.product_preview_img_num_max);
+        });
+
+        $('.btn-move-up').on('click', function () {
+            let moveDom = $(this).parent().parent();
+            let exchangeDom = moveDom.prev();
+            moveDom.insertBefore(exchangeDom);
+        });
+        $('.btn-move-down').on('click', function () {
+            let moveDom = $(this).parent().parent();
+            let exchangeDom = moveDom.next();
+            moveDom.insertAfter(exchangeDom);
+        });
+    };
+</script>
+
+<script>
+    function addAttribute(th) {
+        var elem = $('.product-attribute-list');
+        var i = elem.children('tr').length;
+        
+        var str = `
+            <tr>
+                <td>
+                    <input type="text" name="product_attribute[${i}][attr_code]"
+                           autocomplete="off" class="layui-input product-attribute product-attr-code"
+                           lay-verify="product_attr_code"placeholder="请输入10个字符以内" maxlength="10" value="">
+                </td>
+                <td>
+                    <input type="text" name="product_attribute[${i}][attr_type]"
+                           autocomplete="off" class="layui-input product-attribute" lay-verify="required"
+                           placeholder="请输入20个字符以内" maxlength="20" value="">
+                </td>
+                <td>
+                    <input type="number" name="product_attribute[${i}][attr_price]"
+                           autocomplete="off" class="layui-input product-attribute" lay-verify="required|price"
+                           placeholder="1-999999" maxlength="5" value="">
+                </td>
+                <td>
+                    <button type="button" class="layui-btn layui-btn-sm layui-btn-danger"
+                            onclick="delAttribute(this)">删除
+                    </button>
+                </td>
+            </tr>
+        `;
+        elem.append(str);
+    }
+
+    function delAttribute(th) {
+        if ($('.product-attribute-list').children('tr').length < 2) {
+            layer.msg('最少要有一个属性', {icon: 7, time: 2000});
+            return false;
+        }
+        // 删除前进行订单验证
+        var elem = $(th);
+        var url = "{:url('product/checkProductAttributeInOrder')}";
+        var product_code = $("input[name='product_code']").val();
+        var attr_code = elem.parents('tr').find('input:first').val();
+        if (!attr_code || !product_code) {
+            elem.parents('tr').remove();
+            return ;
+        }
+        ajaxCommon(url, {
+            product_code : product_code,
+            attr_code : attr_code,
+        }, 'post', function () {
+            elem.parents('tr').remove();
+        }, function (result) {
+            layer.msg(result.msg, {icon: 7, time: 2500});
+        }, false);
+    }
+</script>
+
+{/block}
+
+{block name="footer"}
+{/block}

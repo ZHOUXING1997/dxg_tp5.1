@@ -1,0 +1,319 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    /*.layui-table-cell {*/
+    /*    height: 32px ;*/
+    /*    line-height: 30px ;*/
+    /*}*/
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="search" method="post" action="{:url('Manage/Activity/getList')}">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="开始日" name="start" id="start">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="截止日" name="end" id="end">
+            <div class="layui-input-inline">
+                <select name="activity_type">
+                    <option value="-1">类型</option>
+                    {foreach $activityType as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="activity_status">
+                    <option value="-1">状态</option>
+                    {foreach $activityStatus as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="activity_is_self_start">
+                    <option value="-1">是否自启动</option>
+                    {foreach $activity_self_start_status as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <input type="text" name="search" placeholder="请输入活动名称" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table x-admin" id="activity-list" lay-filter="activity-list"></table>
+</div>
+
+<script type="text/html" id="list-action">
+    <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="x_admin_show('编辑活动','{:url('save')}?activity_id={{d.activity_id}}')">
+        查看
+    </button>
+    <button class="layui-btn  layui-btn-sm" data-action="copyActivity" onclick="change_status(this,{{d.activity_id}})">
+        复制活动
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-danger" onclick="activity_del(this,{{d.activity_id}})">
+        删除
+    </button>
+    <!--// 关闭状态，只能开始
+    // 开始状态，可以提前结束，暂停
+    // 暂停状态，可以提前结束，重新开启
+    // 结束状态，不可直接开启，只能编辑重新开启 -->
+    {{# if (d.activity_status === {:config('activity_status_close')}) { }}  
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="startActivity" onclick="change_status(this,{{d.activity_id}})">
+        开始活动
+    </button>
+        {{# if (d.activity_is_self_start  == {:config('activity_self_start_fail')}) { }}
+        <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="addSelfStart" onclick="change_status(this,{{d.activity_id}})">
+            自动开启
+        </button>
+        {{# } }} 
+    {{# } else if (d.activity_status === {:config('activity_status_start')}) { }}
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="endActivity" onclick="change_status(this,{{d.activity_id}})">
+        提前结束
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="suspendActivity" onclick="change_status(this,{{d.activity_id}})">
+        暂停活动
+    </button>
+    {{# } else if (d.activity_status === {:config('activity_status_suspend')}) { }}
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="endActivity" onclick="change_status(this,{{d.activity_id}})">
+        提前结束
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" data-action="reStartActivity" onclick="change_status(this,{{d.activity_id}})">
+        重新开启
+    </button>
+    {{# } else if (d.activity_status === {:config('activity_status_end')}) { }}
+    {{# } else { }}
+    {{# } }} 
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delAll()">
+            <i class="layui-icon"></i>
+            批量删除</button>
+        <button class="layui-btn layui-btn-sm" onclick="x_admin_show('添加活动','save')">
+            <i class="layui-icon"></i>添加
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="activity-rule">
+    <label title="{{d.activity_rule}}">{{d.activity_rule_preview}}</label>
+</script>
+
+<script type="text/html" id="activity-note">
+    <label title="{{d.activity_note}}">{{d.activity_note_preview}}</label>
+</script>
+
+<script type="text/html" id="activity-discount">
+    <label title="{{d.activity_discount}} 折">{{d.activity_discount}} 折</label>
+</script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#activity-list',
+            //设置表头
+            cols: [
+                [
+                    {title: '全选', type: 'checkbox', fixed: 'left'},
+                    {align: 'center', title: '排序', field: 'activity_sort', sort: true, edit: true},
+                    // {title: '封面图', field: 'cover_img', templet: '#product-img'},
+                    {align: 'center', title: '活动名称', field: 'activity_name', minWidth: 150, edit: true},
+                    {align: 'center', title: '开始时间', field: 'activity_start_time', minWidth: 180},
+                    {align: 'center', title: '结束时间', field: 'activity_end_time', minWidth: 180},
+                    // {align: 'center', title: '活动类型', field: 'activity_type'},
+                    {align: 'center', title: '活动关联', field: 'activity_correlation', minWidth: 200},
+                    {align: 'center', title: '活动折扣', field: 'activity_discount', templet: '#activity-discount', width: 120},
+                    {align: 'center', title: '状态', field: 'activity_status_title', width: 100},
+                    {align: 'center', title: '自启动状态', field: 'activity_self_start_title', width: 100},
+                    {align: 'center', title: '活动备注', field: 'activity_note', templet: '#activity-note', edit: true},
+                    {align: 'center', title: '创建时间', field: 'activity_create_time', sort: true, minWidth: 180},
+                    {align: 'left', title: '操作', templet: '#list-action', minWidth: '380', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/Activity/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+                layer.photos({
+                    photos: '.layer-photos-product-img',
+                });
+            },
+            // 工具栏
+            toolbar: '#toolbarDemo',
+        });
+    });
+</script>
+
+<script>
+    // 批量删除
+    function delAll () {
+        layui.use('table', function () {
+            var table = layui.table;
+            var data = table.checkStatus('activity-list').data;
+            var ids = [];
+
+            for (var i in data){
+                ids.push(data[i].activity_id);
+            }
+            productDel(ids);
+        });
+    }
+</script>
+
+<script>
+    /*活动-删除*/
+    function activity_del(obj, id) {
+        productDel(id);
+    }
+    
+    function change_status(obj, id) {
+        changeStatus(id, $(obj).data('action'));
+    }
+</script>
+
+<script>
+    /*活动删除*/
+    function productDel(id) {
+        layer.confirm('确认要删除吗？只能删除未开始的活动！', function (index) {
+            var formData = {
+                activity_id: id,
+            };
+            ajaxCommon("{:url('manage/Activity/del', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 2000);
+            });
+        });
+    }
+    
+    var action_msg = {
+        addSelfStart: '确定自启动？只能设置距开始时间60分钟以上的活动，且状态只能为未开始。活动会在开始时间前60分钟进行展示。',
+        startActivity: '确认开始活动？活动将展示到首页，且在开始时间后可被购买！',
+        suspendActivity: '确认暂停活动？活动未支付订单无法支付。活动将无法展示！',
+        endActivity: '确认提前结束活动？将无法重新开启，且活动未支付订单无法支付，活动将无法展示！',
+        reStartActivity: '确认重新开启活动？活动将重新展示到首页，且活动订单可支付！',
+        copyActivity: '确认复制此活动？活动名称，活动时间需要重新编辑！',
+    };
+    
+    /*更改状态*/
+    function changeStatus(id, action) {
+        layer.confirm(action_msg[action], function (index) {
+            var formData = {
+                activity_id: id,
+            };
+            var url = "{:url('manage/Activity/', [], '', true)}" + action;
+            ajaxCommon(url, formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 2500);
+            });
+        });
+    }
+</script>
+
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            var table = layui.table;
+            table.reload('activity-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(activity-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                activity_id: data.activity_id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/Activity/viewEdit', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 1500);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('activity-list', 'search');
+                }, 1000);
+            });
+        })
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

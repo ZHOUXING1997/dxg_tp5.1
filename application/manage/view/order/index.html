@@ -1,0 +1,374 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    /*.layui-table-cell {*/
+    /*    height: 32px ;*/
+    /*    line-height: 30px ;*/
+    /*}*/
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div id="delivery-type" style="display: none">
+    <select name="" id="">
+        {if empty($deliveryType) }
+            <option disabled selected value="">请先添加配送方式</option>
+        {else/}
+            {foreach $deliveryType as $vk => $vo}
+            <option value="{$vo.delivery_id}">{$vo.delivery_type}</option>
+            {/foreach}
+        {/if}
+    </select>
+</div>
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="search" method="post" action="{:url('Manage/Order/getList')}">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="开始日" name="start" id="start">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="截止日" name="end" id="end">
+            <div class="layui-input-inline">
+                <select name="main_order_pay_status">
+                    <option value="-1">支付状态</option>
+                    {foreach $payStatus as $key=>$vo }
+                        <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="main_order_pay_type">
+                    <option value="-1">支付方式</option>
+                    {foreach $payType as $key=>$vo }
+                        <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="main_order_status">
+                    <option value="-1">全部订单</option>
+                    {foreach $orderStatus as $key=>$vo }
+                        {if $key == 1}
+                            <option selected value="{$key}">{$vo}</option>
+                        {else}
+                            <option value="{$key}">{$vo}</option>
+                        {/if}
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="main_order_user_confirm">
+                    <option value="-1">全部</option>
+                    {foreach $mainOrderUserConfirmTitle as $key=>$vo }
+                        {if $key == 1}
+                            <option selected value="{$key}">{$vo}</option>
+                        {else}
+                            <option value="{$key}">{$vo}</option>
+                        {/if}
+                    {/foreach}
+                </select>
+            </div>
+            <input type="text" name="search" placeholder="请输入订单号" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table x-admin" id="order-list" lay-filter="order-list"></table>
+</div>
+
+<script type="text/html" id="list-action">
+    <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="x_admin_show('订单详情','{:url(\'orderInfo\')}?main_order_id={{d.main_order_id}}')">
+        查看
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-danger" onclick="order_del(this,{{d.main_order_id}})">
+        删除
+    </button>
+    {{# if (d.main_order_status === {:config('main_order_pay_complete')}) { }}  
+        <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="order_delivery(this,{{d.main_order_id}})">
+            发货
+        </button>
+    {{# } }}  
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delAll()">
+<!--            <i class="layui-icon"></i>-->
+            批量删除</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm" onclick="deliveryAll()">
+<!--            <i class="layui-icon"></i>-->
+            批量发货</button>
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+        <span class="x-right" style="line-height:40px">共有数据：88 条</span>
+    </div>
+</script>
+
+<script type="text/html" id="order-note">
+    <label title="{{d.main_order_note}}">{{d.main_order_note_preview}}</label>
+</script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#order-list',
+            //设置表头
+            cols: [
+                [
+                    {title: '全选', type: 'checkbox', fixed: 'left'},
+                    {align: 'center', title: '订单编号', field: 'main_order_no', minWidth: 190},
+                    {align: 'center', title: '收货人', field: 'main_order_addressee'},
+                    {align: 'center', title: '总金额', field: 'main_order_total_fee', sort: true, templet: function (d) {return `<text>￥ ${d.main_order_total_fee}</text>`;}},
+                    // {align: 'center', title: '应付金额', field: 'main_order_amount_payable', sort: true, templet: function (d) {return `<text>￥ ${d.main_order_payment}</text>`}},
+                    {align: 'center', title: '支付金额', field: 'main_order_payment', sort: true, templet: function (d) {return `<text>￥ ${d.main_order_payment}</text>`;}},
+                    {align: 'center', title: '订单状态', field: 'main_order_status_title'},
+                    // {align: 'center', title: '支付状态', field: 'pay_status_title'},
+                    {align: 'center', title: '支付方式', field: 'main_order_pay_type_title'},
+                    {align: 'center', title: '配送方式', field: 'delivery_title'},
+                    {align: 'center', title: '用户是否确认', field: 'main_order_user_confirm_title'},
+                    {align: 'center', title: '下单时间', field: 'main_order_create_time', sort: true, minWidth: 180},
+                    {align: 'center', title: '订单备注', field: 'main_order_note_preview', templet: '#order-note'},
+                    {align: 'left', title: '操作', templet: '#list-action', minWidth: '200', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/Order/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+                
+            },
+            // 工具栏
+            toolbar: '#toolbarDemo',
+        });
+    });
+</script>
+
+<script>
+    //头工具栏事件
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('toolbar(order-list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'getCheckData':
+                    layer.alert(JSON.stringify(checkStatus.data));
+                    break;
+                case 'getCheckLength':
+                    layer.msg('选中了：' + checkStatus.data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选' : '未全选');
+                    break;
+            }
+        });
+    });
+    
+    // 批量删除
+    function delAll () {
+        layui.use('table', function () {
+            var table = layui.table;
+            var data = table.checkStatus('order-list').data;
+            var ids = [];
+
+            for (var i in data){
+                ids.push(data[i].main_order_id);
+            }
+            orderDel(ids);
+        });
+    }
+    
+    function deliveryAll () {
+
+        layui.use('table', function () {
+            var table = layui.table;
+            var data = table.checkStatus('order-list').data;
+            var ids = [];
+
+            for (var i in data){
+                ids.push(data[i].main_order_id);
+            }
+            layer.open({
+                title: '请选择发货方式',
+                type: 1,
+                content: $('#delivery-type'), //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+                btn: ['确认', '取消']
+                ,yes: function(index, layero){
+                    // 获取配送id
+                    var delivery_id = $('#delivery-type').find('select option:selected').val();
+                    if (!delivery_id) {
+                        layer.msg('请先添加配送方式', {icon: 7, time: 1500});
+                        return;
+                    }
+                    //按钮【按钮一】的回调
+                    layer.close(index);
+                    orderDelivery(ids, delivery_id);
+                }
+                ,btn2: function(index, layero){
+                    //按钮【按钮二】的回调
+                    // return false; // 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        });
+    }
+</script>
+
+<script>
+    /*订单-删除*/
+    function order_del(obj, id) {
+        orderDel(id);
+    }
+
+    /*订单-发货*/
+    function order_delivery(obj, id) {
+        layer.open({
+            title: '请选择发货方式',
+            type: 1,
+            content: $('#delivery-type'), //这里content是一个DOM，注意：最好该元素要存放在body最外层，否则可能被其它的相对元素所影响
+            btn: ['确认', '取消']
+            ,yes: function(index, layero){
+                var delivery_id = $('#delivery-type').find('select option:selected').val();
+                if (!delivery_id) {
+                    layer.msg('请先添加配送方式', {icon: 7, time: 1500});
+                    return;
+                }
+                //按钮【按钮一】的回调
+                layer.close(index);
+                orderDelivery(id, delivery_id);
+            }
+            ,btn2: function(index, layero){
+                //按钮【按钮二】的回调
+                // return false; // 开启该代码可禁止点击该按钮关闭
+            }
+        });
+    }
+</script>
+
+<script>
+    /*订单发货*/
+    function orderDelivery (id, delivery_id) {
+        var formData = {
+            main_order_id: id,
+            delivery_id: delivery_id,
+        };
+        layer.confirm('确认要发货吗？请确认当前为待发货！', function (index) {
+            ajaxCommon("{:url('manage/Order/orderDelivery', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('order-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('order-list', 'search');
+                }, 1000);
+            });
+        });
+    }
+
+    /*订单删除*/
+    function orderDel(id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            var formData = {
+                main_order_id: id,
+            };
+            ajaxCommon("{:url('manage/Order/del', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('order-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('order-list', 'search');
+                }, 1000);
+            });
+        });
+    }
+</script>
+
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            console.log(data);
+            var table = layui.table;
+            table.reload('order-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(order-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                main_order_id: data.main_order_id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/Order/doEdit', [], '', true)}", formData, 'post', function (result) {
+
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('order-list', 'search');
+                }, 1000);
+            });
+        })
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

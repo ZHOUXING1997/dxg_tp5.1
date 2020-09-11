@@ -1,0 +1,203 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" method="post" action="{:url('Manage/Withdraw/getList')}">
+            <input type="text" name="search" placeholder="请输入用户名" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search">
+                <i class="layui-icon">&#xe615;</i>
+            </button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table" id="user-list" lay-filter="user-list">
+    </table>
+
+</div>
+<script type="text/html" id="list-action">
+    {{# if (d.queue_withdraw_status === {:config('queue_withdraw_status_not')}) { }}  
+        <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="markPayed(this,{{d.queue_withdraw_id}})">
+            标记已打款
+        </button>
+    {{# } }}  
+</script>
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" lay-event="getCheckLength">获取选中数目</button>
+        <button class="layui-btn layui-btn-sm" lay-event="isAll">验证是否全选</button>
+    </div>
+</script>
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#user-list',
+            //设置表头
+            cols: [
+                [
+                    {title: '全选', type: 'checkbox'},
+                    {align: 'center', title: '序号', field: 'user_id', type: 'numbers'},
+                    {
+                        title: '头像', field: 'user_avatar', unresize: true, templet: function (d) {
+                            return `<div class="layer-photos-demo" style="cursor:pointer;">
+                                      <img src="${d.user_avatar}" alt="用户头像">
+                                    </div>`;
+                        }
+                    },
+                    {align: 'center', title: '用户名', field: 'user_nickname'},
+                    {align: 'center', title: '提现金额', field: 'queue_withdraw_money', sort: true, templet: function (d) {return `<text>￥ ${d.queue_withdraw_money}</text>`;}},
+                    {align: 'center', title: '提现状态', field: 'queue_withdraw_status_title'},
+                    {align: 'center', title: '备注', field: 'queue_withdraw_remark'},
+                    {align: 'center', title: '提现时间', field: 'queue_withdraw_create_time', sort: true, minWidth: 180},
+                    {align: 'left', title: '操作', templet: '#list-action', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/Withdraw/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+                layer.photos({
+                    photos: '.layer-photos-demo',
+                });
+            },
+            // 工具栏
+            // toolbar: '#toolbarDemo',
+            toolbar: true,
+        });
+    });
+</script>
+<script>
+    //头工具栏事件
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('toolbar(user-list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'getCheckData':
+                    layer.alert(JSON.stringify(checkStatus.data));
+                    break;
+                case 'getCheckLength':
+                    layer.msg('选中了：' + checkStatus.data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选' : '未全选');
+                    break;
+            }
+        })
+    });
+</script>
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            
+            var table = layui.table;
+            table.reload('user-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(user-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                user_id : data.user_id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/Withdraw/viewEdit', [], '', true)}", formData, 'post', function (result) {
+                
+            }, function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            });
+        })
+    });
+</script>
+<script>
+    function markPayed (obj, id) {
+        layer.confirm('确认已打款吗？', function (index) {
+            var formData = {
+                queue_withdraw_id: id,
+            };
+            ajaxCommon("{:url('manage/Withdraw/markPayed', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            });
+        });
+    }
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

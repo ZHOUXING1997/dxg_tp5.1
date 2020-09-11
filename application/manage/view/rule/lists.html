@@ -1,0 +1,83 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+  // 是否开启刷新记忆tab功能
+  // var is_remember = false;
+</script>
+<style>
+  .x-so {
+    margin-bottom: 0 !important;
+  }
+  
+  .layui-form-pane .layui-form-label{
+    width: 300px;
+  }
+  .layui-input, .layui-textarea{
+    width: 120%
+  }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+  <table class="layui-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>角色名</th>
+        <th>权限类型</th>
+        <th>描述</th>
+        <th>操作</th>
+    </thead>
+    <tbody>
+      {if $groups != []}
+          {foreach $groups as $group}
+            <tr>
+              <td>{$group.id}</td>
+              <td>{$group.name}</td>
+              <td>
+                {if $group.type == 1}
+                  普通权限
+                {else/}
+                  最高权限
+                {/if}
+              </td>
+              <td>{$group.desc}</td>
+
+              <td class="td-manage">
+                {if $group.type == 1}
+                  <button class="layui-btn layui-btn-fluid" onclick="x_admin_show('权限列表','ruleLists?id={$group.id}')">查看所有权限</button>
+                {else/}
+                  已有所有权限
+                {/if}
+              </td>
+            </tr>
+          {/foreach}
+      {/if}
+    </tbody>
+  </table>
+
+</div>
+{/block}
+
+{block name="footer"}
+{/block}

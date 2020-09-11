@@ -1,0 +1,166 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    .layui-form-pane .layui-form-label{
+        width: 300px;
+    }
+    .layui-input, .layui-textarea{
+        width: 120%
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form action="" method="post" class="layui-form layui-form-pane" lay-filter="editMenu">
+            <input type="hidden" name='id' id='id'>
+            <div class="layui-form-item layui-col-md8 layui-col-md-offset3">
+                <label for="name" class="layui-form-label">
+                    <span class="x-red">*</span>菜单名
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="name" name="name" required="" lay-verify="name"
+                    autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-col-md8 layui-col-md-offset3">
+                <label for="icon" class="layui-form-label">
+                    <span class="x-red">*</span>图标(按照系统图标对应表填入)
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="icon" name="icon" required="" lay-verify="icon"
+                    autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            {if $menu.type == 1}
+                <div class="layui-form-item  layui-col-md-offset3">
+                <label for="module" class="layui-form-label">
+                    模块(module)
+                </label>
+                <div class="layui-input-inline ">
+                    <input type="text" id="module" name="module"
+                    autocomplete="off" class="layui-input layui-col-md6" value="{$menu.module}">
+                </div>
+                </div>
+                <div class="layui-form-item  layui-col-md-offset3">
+                    <label for="controller" class="layui-form-label">
+                        控制器(controller)
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="controller" name="controller"
+                        autocomplete="off" class="layui-input" value="{$menu.controller}">
+                    </div>
+                </div>
+                <div class="layui-form-item  layui-col-md-offset3">
+                    <label for="function" class="layui-form-label">
+                        方法(function)
+                    </label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="function" name="function"
+                        autocomplete="off" class="layui-input" value="{$menu.function}">
+                    </div>
+                </div>
+            {/if}
+
+
+
+            <div class="layui-form-item  layui-col-md-offset3">
+                <label for="param" class="layui-form-label">
+                    参数(?a=b&c=d模式)
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="param" name="param"
+                    autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item  layui-col-md-offset3">
+                <label for="order" class="layui-form-label">
+                    排序(数越大排序越靠前)
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="order" name="order"
+                    autocomplete="off" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+            <button class="layui-btn layui-btn-lg layui-col-md-offset5" lay-submit="" lay-filter="edit">确认修改</button>
+          </div>
+        </form>
+</div>
+<script>
+layui.use('form', function(){
+    var form = layui.form;
+    form.val("editMenu", {
+              "id": "{$menu.id}",
+              "name": "{$menu.name}",
+              'order':"{$menu.order}",
+              'icon' : "{$menu.icon}",
+            });
+
+    form.verify({
+        name: function(value){
+          if(value.length > 10 || value.length == 0){
+            return '菜单名不可为空 或者 菜单名不可长于10个字符';
+          }
+        },
+        icon:function(value) {
+            if(value.length == 0) {
+                return '图标不可为空';
+            }
+        }
+
+    });
+
+    form.on('submit(edit)', function(data){
+        //发异步，把数据提交给php
+        $.post("{:url('manage/menu/doEdit')}",data.field,function(res){
+            if(res.code == 0){
+                layer.msg('修改成功',{time:1000});
+                setTimeout(function(){
+                    x_admin_close();
+                    $(".x-iframe" , parent.parent.document).attr('src', 'manage/menu/lists');
+                }, 1000);
+
+            }else{
+                layer.msg(res.msg, {time: 2000});
+            }
+        }, 'json');
+
+        return false;
+
+    });
+});
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

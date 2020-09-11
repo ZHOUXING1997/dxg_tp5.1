@@ -1,0 +1,113 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    
+    .layui-form-pane .layui-form-label{
+        width: 300px;
+    }
+    .layui-input, .layui-textarea{
+        width: 120%
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form action="" method="post" class="layui-form layui-form-pane" lay-filter="addUsesrGroup">
+            <input type="hidden" id="id" name="id" required="" lay-verify="id"
+                    autocomplete="off" class="layui-input">
+            <div class="layui-form-item layui-col-md-offset3">
+                <label class="layui-form-label">角色权限</label>
+                <div class="layui-input-block">
+                  <input type="radio" name="type" value="2" title="最高" lay-verify="type">
+                  <input type="radio" name="type" value="1" title="普通" lay-verify="type">
+                </div>
+              </div>
+            <div class="layui-form-item layui-col-md8 layui-col-md-offset3">
+                <label for="name" class="layui-form-label">
+                    <span class="x-red">*</span>角色名称
+                </label>
+                <div class="layui-input-inline">
+                    <input type="text" id="name" name="name" required="" lay-verify="name"
+                    autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item layui-form-text layui-col-md8 layui-col-md-offset3">
+            <label class="layui-form-label">角色描述</label>
+            <div class="layui-input-block">
+              <textarea name="desc" placeholder="请输入角色描述" class="layui-textarea"></textarea>
+            </div>
+
+            <div class="layui-form-item">
+            <button class="layui-btn layui-btn-lg layui-col-md-offset5" lay-submit="" lay-filter="edit">确认修改</button>
+          </div>
+        </form>
+</div>
+<script>
+layui.use('form', function(){
+    var form = layui.form;
+    form.val("addUsesrGroup", {
+              "id"  : "{$role.id}",
+              "name": "{$role.name}",
+              'desc':"{$role.desc}",
+              'type': "{$role.type}",
+            });
+
+    form.verify({
+        name: function(value){
+          if(value.length > 10 || value.length == 0){
+            return '角色名称不可为空或者角色名称不可长于10个字符';
+          }
+        },
+    });
+
+    form.on('submit(edit)', function(data){
+        //发异步，把数据提交给php
+        $.post("{:url('manage/userGroup/doEdit')}",data.field,function(res){
+            if(res.code == 0){
+                layer.msg('修改成功',{time:1000});
+                setTimeout(function(){
+                    x_admin_close();
+                    $(".x-iframe" , parent.parent.document).attr('src', 'manage/userGroup/lists');
+                }, 1000);
+
+            }else{
+                layer.msg(res.msg, {time: 2000});
+            }
+        }, 'json');
+
+        return false;
+
+    });
+});
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

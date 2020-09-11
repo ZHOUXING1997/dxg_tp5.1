@@ -1,0 +1,39 @@
+<!-- 左侧菜单开始 -->
+<div class="left-nav">
+    <div id="side-nav">
+        <ul id="nav">
+            {if (empty($menus)) }
+    
+            {else /}
+                {foreach $menus as $menu}
+                    <li>
+                        {if (!$menu['url'])}
+                            <a href="javascript:;">
+                                <i class="iconfont">{:urldecode($menu['icon'])}</i>
+                                <cite>{$menu['name']}</cite>
+                                <i class="iconfont nav_right">&#xe697;</i>
+                            </a>
+                        {else /}
+                            <a _href="{:url($menu['url'] . $menu['param'])}">
+                                <i class="iconfont">{:urldecode($menu['icon'])}</i>
+                                <cite>{$menu['name']}</cite>
+                            </a>
+                        {/if}
+                        {if (!empty($menu['son']))}
+                            <ul class="sub-menu">
+                                {foreach $menu.son as $son}
+                                    <li>
+                                        <a _href="{:url($son['url'] . $son['param'])}">
+                                            <i class="iconfont">{:urldecode($son['icon'])}</i>
+                                            <cite>{$son['name']}</cite>
+                                        </a>
+                                    </li>
+                                {/foreach}
+                            </ul>
+                        {/if}
+                    </li>
+                {/foreach}
+            {/if}
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,288 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    /*.layui-table-cell {*/
+    /*    height: 32px ;*/
+    /*    line-height: 30px ;*/
+    /*}*/
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="search" method="post" action="{:url('Manage/Product/getList')}">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="开始日" name="start" id="start">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="截止日" name="end" id="end">
+            <div class="layui-input-inline">
+                <select name="cate_id">
+                    <option value="-1">分类</option>
+                    {foreach $cateLists as $key=>$vo }
+                    <option value="{$vo.value}">{$vo.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="product_on_sale">
+                    <option value="-1">状态</option>
+                    {foreach $productSale as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="product_is_vip_exclusive">
+                    <option value="-1">vip专属</option>
+                    {foreach $exclusiveStatus as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <input type="text" style="width: 180px" name="search" placeholder="请输入商品名、完整货号" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table x-admin" id="product-list" lay-filter="product-list"></table>
+</div>
+
+<script type="text/html" id="list-action">
+    <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="x_admin_show('编辑商品','{:url('save')}?product_id={{d.product_id}}')">
+        查看
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-danger" onclick="product_del(this,{{d.product_id}})">
+        删除
+    </button>
+    {{# if (d.product_on_sale === {:config('on_sale')}) { }}  
+        <button class="layui-btn  layui-btn-sm layui-btn-warm" onclick="change_status(this,{{d.product_id}})">下架</button>
+    {{# } else { }}
+        <button class="layui-btn  layui-btn-sm" onclick="change_status(this,{{d.product_id}})">上架</button>
+    {{# } }}  
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delAll()">
+            <i class="layui-icon"></i>
+            批量删除</button>
+        <button class="layui-btn layui-btn-sm" onclick="x_admin_show('添加商品','save')">
+            <i class="layui-icon"></i>添加
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="product-description">
+    <label title="{{d.product_description}}">{{d.product_description_preview}}</label>
+</script>
+
+<script type="text/html" id="product-img">
+    <div class="layer-photos-product-img" style="cursor:pointer;">
+        <img src="{{d.product_cover_img_url}}" alt="封面图">
+    </div>
+</script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#product-list',
+            //设置表头
+            cols: [
+                [
+                    {title: '全选', type: 'checkbox', fixed: 'left'},
+                    {align: 'center', title: '排序', field: 'product_sort', sort: true, edit: true},
+                    {title: '封面图', field: 'product_cover_img_url', templet: '#product-img'},
+                    {align: 'center', title: '商品名', field: 'product_title', minWidth: 150},
+                    {align: 'center', title: '货号', field: 'product_code', edit: false, minWidth: 150},
+                    {align: 'center', title: '分类', field: 'cate_title'},
+                    {align: 'center', title: '价格', field: 'product_price', sort: true, edit: true, minWidth: '190', templet: function (d) {
+                            return `<text>￥ ${d.product_price}</text>`;
+                        }
+                    },
+                    {align: 'center', title: '商品描述', field: 'product_description_preview', templet: '#product-description'},
+                    {align: 'center', title: '状态', field: 'product_on_sale_title'},
+                    {align: 'center', title: '会员专属', field: 'product_vip_exclusive_title'},
+                    {align: 'center', title: '销量', field: 'product_sales', sort: true},
+                    {align: 'center', title: '库存', field: 'product_stock', sort: true},
+                    {align: 'center', title: '创建时间', field: 'product_create_time', sort: true, minWidth: 180},
+                    {align: 'left', title: '操作', templet: '#list-action', minWidth: '200', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/Product/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+                layer.photos({
+                    photos: '.layer-photos-product-img',
+                });
+            },
+            // 工具栏
+            toolbar: '#toolbarDemo',
+        });
+    });
+</script>
+
+<script>
+    // 批量删除
+    function delAll () {
+        layui.use('table', function () {
+            var table = layui.table;
+            var data = table.checkStatus('product-list').data;
+            var ids = [];
+
+            for (var i in data){
+                ids.push(data[i].product_id);
+            }
+            productDel(ids);
+        });
+    }
+</script>
+
+<script>
+    /*商品-删除*/
+    function product_del(obj, id) {
+        productDel(id);
+    }
+    
+    function change_status(obj, id) {
+        changeStatus(id);
+    }
+</script>
+
+<script>
+    /*商品删除*/
+    function productDel(id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            var formData = {
+                product_id: id,
+            };
+            ajaxCommon("{:url('manage/Product/del', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 2000);
+            });
+        });
+    }
+    
+    /*更改显示*/
+    function changeStatus(id) {
+        layer.confirm('确认要更改吗？', function (index) {
+            var formData = {
+                product_id: id,
+            };
+            ajaxCommon("{:url('manage/Product/changeStatus', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 1000);
+            });
+        });
+    }
+</script>
+
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            var table = layui.table;
+            table.reload('product-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(product-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                product_id: data.product_id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/Product/viewEdit', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 2000);
+            }, function (result) {
+                setTimeout(function () {
+                    // window.location.reload();
+                    refreshViewData('product-list', 'search');
+                }, 1000);
+            });
+        })
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

@@ -1,0 +1,100 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+  // 是否开启刷新记忆tab功能
+  // var is_remember = false;
+</script>
+<style>
+  .x-so {
+    margin-bottom: 0 !important;
+  }
+  
+  .layui-form-pane .layui-form-label{
+    width: 300px;
+  }
+  .layui-input, .layui-textarea{
+    width: 120%
+  }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+      <table class="layui-table">
+        <thead>
+          <tr>
+            <th>
+              <div class="layui-unselect header layui-form-checkbox" lay-skin="primary"><i class="layui-icon">&#xe605;</i></div>
+            </th>
+            <th>ID</th>
+            <th>菜单名称</th>
+            <th>url</th>
+        </thead>
+        <tbody>
+          {if $menus != []}
+            {foreach $menus as $menu}
+              <tr>
+                <td>
+                  {if $menu.select == 1}
+                  <div class="layui-unselect layui-form-checkbox layui-form-checked" lay-skin="primary" data-id='{$menu.id}'><i class="layui-icon">&#xe605;</i></div>
+                  {else/}
+                  <div class="layui-unselect layui-form-checkbox" lay-skin="primary" data-id='{$menu.id}'><i class="layui-icon">&#xe605;</i></div>
+                  {/if}
+                </td>
+                <td>{$menu.id}</td>
+                <td>{$menu.name}</td>
+                <td>{$menu.url} </td>
+              </tr>
+            {/foreach}
+          {/if}
+
+        </tbody>
+      </table>
+      <div class="layui-btn-group" style="margin-left: 40%;">
+        <button   class="layui-btn layui-btn-lg" onclick="makesure()">确定修改</button>
+      </div>
+    </div>
+<script>
+  var id = {$id};
+  function makesure() {
+      var data = tableCheck.getData();
+      $.post("{:url('manage/rule/bindRule')}",{ids:data,id:id},function(res){
+            if(res.code == 0){
+                layer.msg('修改成功',{time:1000});
+                setTimeout(function(){
+                    x_admin_close();
+                    $(".x-iframe" , parent.parent.document).attr('src', 'manage/rule/lists');
+                }, 1000);
+
+            }else{
+                layer.msg(res.msg, {time: 2000});
+            }
+        }, 'json');
+
+      return false;
+  }
+
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

@@ -1,0 +1,126 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/DeliveryType/doSave')}" method="post" lay-filter="cateSave">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="delivery_id" value="{$deliveryId}">
+            </div>
+            <div class="layui-form-item layui-row">
+                <label for="delivery_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>配送方式
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="delivery_title" name="delivery_title" lay-verify="required" autocomplete="off" class="layui-input" minlength="2" maxlength="10">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>配送方式，长度为2-10字符
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="delivery_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>配送人姓名
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="delivery_name" name="delivery_name" lay-verify="required" autocomplete="off" class="layui-input" value="" minlength="2" maxlength="6">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>配送人姓名,2-6个字符
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="delivery_mobile" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>配送人电话
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="delivery_mobile" name="delivery_mobile" lay-verify="required|mobile" autocomplete="off" class="layui-input" value="">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>配送人电话,合法的手机号
+                </div>
+            </div>
+            
+            <div class="layui-row">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+    
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("cateSave", JSON.parse('{:urldecode($data)}'));
+
+        //自定义验证规则
+        form.verify({
+            mobile: function (mobile) {
+                if(!(/^1(3|4|5|6|7|8|9)\d{9}$/.test(mobile))){
+                    return '手机号码有误，请重填';
+                }
+            },
+        });
+        
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

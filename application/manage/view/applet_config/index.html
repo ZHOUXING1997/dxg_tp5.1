@@ -1,0 +1,206 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .layui-form-pane .layui-form-label {
+        width: 280px;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/AppletConfig/doSave')}" method="post" lay-filter="cateSave">
+        <div class="layui-container">
+    
+            <div class="hidden-input">
+                <input type="hidden" name="applet_id" value="{$data.applet_id|default=-1}">
+            </div>
+    
+            <div class="layui-row" style="margin-bottom: 15px">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+            
+                    <!--<button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">-->
+                    <!--    关闭-->
+                    <!--</button>-->
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_freight_min_fee" class="layui-form-label layui-col-md4">
+                    <span class="x-red">*</span>订单收取运费的最低金额
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="main_order_freight_min_fee" name="main_order_freight_min_fee" lay-verify="required" autocomplete="off"
+                           class="layui-input" min="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span> 0为不收取运费，大于等于1
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="main_order_freight" class="layui-form-label layui-col-md4">
+                    <span class="x-red">*</span>订单运费
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="main_order_freight" name="main_order_freight" lay-verify="required" autocomplete="off"
+                           class="layui-input" min="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span> 0为不收取运费，大于等于1
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_withdraw_min_fee" class="layui-form-label layui-col-md4">
+                    <span class="x-red">*</span>提现最低金额
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="user_withdraw_min_fee" name="user_withdraw_min_fee" lay-verify="required" autocomplete="off"
+                           class="layui-input" min="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span> 0为不限制，大于等于1
+                </div>
+            </div>
+            
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_withdraw_min_fee" class="layui-form-label layui-col-md4">
+                    <span class="x-red">*</span>订单自动收货时间
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="main_order_automatic_receipt" name="main_order_automatic_receipt" lay-verify="required|positive_integer" autocomplete="off"
+                           class="layui-input" min="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span> 单位天，默认7天
+                </div>
+            </div>
+            
+            <div class="layui-row">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+                    
+                    <!--<button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">-->
+                    <!--    关闭-->
+                    <!--</button>-->
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    window.onload = function () {
+        upFile('#up-cate-icon', "{:url('Open/UpFile/upload')}", global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+        $(function () {
+            if ($('#cate-icon-url').val()) {
+                $('.layui-upload-img').attr('src', $('#cate-icon-url').val());
+            }
+        });
+    };
+</script>
+<script>
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("cateSave", JSON.parse('{:urldecode($data)}'));
+
+        //自定义验证规则
+        form.verify({
+            nikename: function (value) {
+                if (value.length < 5) {
+                    return '昵称至少得5个字符啊';
+                }
+            }
+            , pass: [/(.+){6,12}$/, '密码必须6到12位']
+            , repass: function (value) {
+                if ($('#L_pass').val() != $('#L_repass').val()) {
+                    return '两次密码不一致';
+                }
+            },
+            cate_sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            },
+            cate_rebate_rate: function (value) {
+                if (value < 0 || value > 30) {
+                    return '返利比例需要在1-30之间, 0为不打折';
+                }
+            },
+            positive_integer: function (value) {
+                if (!(/(^[1-9]\d*$)/.test(value))) {
+                    return '自动收货时间只能为正整数';
+                }
+                if (value < 3) {
+                    return '自动收货时间最少为3天';
+                }
+            },
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

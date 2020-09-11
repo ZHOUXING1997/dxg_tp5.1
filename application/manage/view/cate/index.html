@@ -1,0 +1,267 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    /*.layui-table-cell {*/
+    /*    height: 32px ;*/
+    /*    line-height: 30px ;*/
+    /*}*/
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="search" method="post" action="{:url('Manage/Cate/getList')}">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="开始日" name="start" id="start">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="截止日" name="end" id="end">
+            <div class="layui-input-inline">
+                <select name="cate_is_show">
+                    <option value="-1">显示状态</option>
+                    {foreach $showStatus as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <input type="text" name="search" placeholder="请输入标题" autocomplete="off" class="layui-input">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table x-admin" id="cate-list" lay-filter="cate-list"></table>
+</div>
+
+<script type="text/html" id="list-action">
+    <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="x_admin_show('编辑分类','{:url('save')}?cate_id={{d.cate_id}}')">
+        查看
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-danger" onclick="cate_del(this,{{d.cate_id}})">
+        删除
+    </button>
+    <button class="layui-btn  layui-btn-sm layui-btn-warm" onclick="change_status(this,{{d.cate_id}})">
+        {{# if (d.cate_is_show === {:config('show_status_hide')}) { }}  
+            显示
+        {{# } else { }}
+            隐藏
+        {{# } }}  
+    </button>
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" onclick="x_admin_show('添加分类','save')">
+            <i class="layui-icon"></i>添加
+        </button>
+    </div>
+</script>
+
+<script type="text/html" id="cate-description">
+    <label title="{{d.cate_description}}">{{d.cate_description_preview}}</label>
+</script>
+
+<script type="text/html" id="cate-icon">
+    <div class="layer-photos-cate-icon" style="cursor:pointer;">
+        <img src="{{d.cate_icon_url}}" alt="图标">
+    </div>
+</script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#cate-list',
+            //设置表头
+            cols: [
+                [
+                    // {title: '全选', type: 'checkbox', fixed: 'left'},
+                    {align: 'center', title: '排序', field: 'cate_sort', sort: true, edit: true},
+                    {align: 'center', title: '标题', field: 'cate_title', edit: true},
+                    {title: '图标', field: 'icon', templet: '#cate-icon'},
+                    /*{align: 'center', title: 'vip1折扣率', field: 'vip_1_discount', sort: true, edit: true},
+                    {align: 'center', title: 'vip2折扣率', field: 'vip_2_discount', sort: true, edit: true},
+                    {align: 'center', title: 'vip3折扣率', field: 'vip_3_discount', sort: true, edit: true},
+                    {align: 'center', title: 'vip4折扣率', field: 'vip_4_discount', sort: true, edit: true},
+                    {align: 'center', title: 'vip5折扣率', field: 'vip_5_discount', sort: true, edit: true},*/
+                    {align: 'center', title: '是否显示', field: 'cate_is_show_title'},
+                    {align: 'center', title: '分类说明', field: 'cate_description_preview', templet: '#cate-description'},
+                    {align: 'center', title: '商品数量', field: 'product_num'},
+                    {align: 'center', title: '创建时间', field: 'cate_create_time', sort: true, minWidth: 180},
+                    {align: 'left', title: '操作', templet: '#list-action', minWidth: '200', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/Cate/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+                layer.photos({
+                    photos: '.layer-photos-cate-icon',
+                });
+            },
+            // 工具栏
+            toolbar: '#toolbarDemo',
+        });
+    });
+</script>
+
+<script>
+    //头工具栏事件
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('toolbar(cate-list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'getCheckData':
+                    layer.alert(JSON.stringify(checkStatus.data));
+                    break;
+                case 'getCheckLength':
+                    layer.msg('选中了：' + checkStatus.data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选' : '未全选');
+                    break;
+            }
+        });
+    });
+</script>
+
+<script>
+    /*分类-删除*/
+    function cate_del(obj, id) {
+        cateDel(id);
+    }
+    
+    function change_status(obj, id) {
+        changeStatus(id);
+    }
+</script>
+
+<script>
+    /*分类删除*/
+    function cateDel(id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            var formData = {
+                cate_id: id,
+            };
+            ajaxCommon("{:url('manage/Cate/del', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            });
+        });
+    }
+    
+    /*更改显示*/
+    function changeStatus(id) {
+        layer.confirm('确认要更改吗？', function (index) {
+            var formData = {
+                cate_id: id,
+            };
+            ajaxCommon("{:url('manage/Cate/changeStatus', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            });
+        });
+    }
+</script>
+
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            var table = layui.table;
+            table.reload('cate-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(cate-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                cate_id: data.cate_id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/Cate/viewEdit', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    refreshViewData('cate-list', 'search');
+                }, 1000);
+            });
+        })
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

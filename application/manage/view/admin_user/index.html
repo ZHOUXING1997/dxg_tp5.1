@@ -1,0 +1,269 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+    /*.layui-table-cell {*/
+    /*    height: 32px ;*/
+    /*    line-height: 30px ;*/
+    /*}*/
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so" id="search" method="post" action="{:url('Manage/AdminUser/getList')}">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="登录开始" name="start" id="start">
+            <input class="layui-input input-laydate-datetime" autocomplete="off" placeholder="登录截止" name="end" id="end">
+            <div class="layui-input-inline">
+                <select name="user_status">
+                    <option value="-1">状态</option>
+                    {foreach $adminUserStatus as $key=>$vo }
+                    <option value="{$key}">{$vo}</option>
+                    {/foreach}
+                </select>
+            </div>
+            <input type="text" name="search" placeholder="请输入用户名，昵称或邮箱" autocomplete="off" class="layui-input" style="width: 200px; !important;">
+            <button type="button" class="layui-btn" lay-submit="" lay-filter="search"><i class="layui-icon">&#xe615;</i></button>
+            <a class="layui-btn" href="javascript:location.replace(location.href);" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+        </form>
+    </div>
+    <table class="layui-table x-admin" id="admin-user-list" lay-filter="admin-user-list"></table>
+</div>
+
+<script type="text/html" id="list-action">
+    <button class="layui-btn  layui-btn-sm layui-btn-normal" onclick="x_admin_show('编辑用户','{:url('save')}?id={{d.id}}')">
+        查看
+    </button>
+    {{# if (d.id != 1) { }}
+        <button class="layui-btn  layui-btn-sm layui-btn-danger" onclick="admin_user_del(this,{{d.id}})">
+            删除
+        </button>
+        <button class="layui-btn  layui-btn-sm layui-btn-warm" onclick="change_status(this,{{d.id}})">
+            {{# if (d.user_status === {:config('admin_user_open')}) { }}  
+            禁用
+            {{# } else { }}
+            启用
+            {{# } }}  
+        </button>
+    {{# } }}  
+</script>
+
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-sm" onclick="x_admin_show('添加用户','save')">
+            <i class="layui-icon"></i>添加
+        </button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delAll()">
+            <i class="layui-icon"></i>
+            批量删除</button>
+    </div>
+</script>
+
+<script>
+    layui.use('table', function () {
+        var table = layui.table;
+
+        table.render({
+            //指定原始表格元素选择器（推荐id选择器）
+            elem: '#admin-user-list',
+            //设置表头
+            cols: [
+                [
+                    {title: '全选', type: 'checkbox', fixed: 'left'},
+                    {align: 'center', title: '用户名', field: 'user_login'},
+                    {align: 'center', title: '昵称', field: 'user_nickname'},
+                    {align: 'center', title: '邮箱', field: 'user_email'},
+                    {align: 'center', title: '性别', field: 'sex_title', width: 80},
+                    {align: 'center', title: '状态', field: 'user_status_title', width: 80},
+                    {align: 'center', title: '最后登录时间', field: 'last_login_time', sort: true,},
+                    {align: 'center', title: '最后登录IP', field: 'last_login_ip'},
+                    {align: 'center', title: '创建时间', field: 'create_time', sort: true, minWidth: 180},
+                    {align: 'left', title: '操作', templet: '#list-action', minWidth: '200', fixed: 'right'},
+                ]
+            ],
+            //开启隔行背景
+            even: true,
+            page: true,
+            // 每页条数
+            limit: 10,
+            // 分页数量切换
+            limits: [10, 20, 30, 50, 100],
+            url: "{:url('Manage/AdminUser/getList')}",
+            // 是否loading
+            loading: true,
+            //如果无需传递额外参数，可不加该参数
+            where: {},
+            //如果无需自定义HTTP类型，可不加该参数
+            method: 'get',
+            parseData: function (res) { //res 即为原始返回的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.data.total, //解析数据长度
+                    "data": res.data.data //解析数据列表
+                };
+            },
+            done: function (result) {
+            },
+            // 工具栏
+            toolbar: '#toolbarDemo',
+        });
+    });
+</script>
+
+<script>
+    //头工具栏事件
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('toolbar(admin-user-list)', function (obj) {
+            var checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'getCheckData':
+                    layer.alert(JSON.stringify(checkStatus.data));
+                    break;
+                case 'getCheckLength':
+                    layer.msg('选中了：' + checkStatus.data.length + ' 个');
+                    break;
+                case 'isAll':
+                    layer.msg(checkStatus.isAll ? '全选' : '未全选');
+                    break;
+            }
+        });
+    });
+
+    // 批量删除
+    function delAll () {
+        layui.use('table', function () {
+            var table = layui.table;
+            var data = table.checkStatus('admin-user-list').data;
+            var ids = [];
+
+            for (var i in data){
+                ids.push(data[i].id);
+            }
+            orderDel(ids);
+        });
+    }
+</script>
+
+<script>
+    /*用户-删除*/
+    function admin_user_del(obj, id) {
+        adminUserDel(id);
+    }
+    
+    function change_status(obj, id) {
+        changeStatus(id);
+    }
+</script>
+
+<script>
+    /*用户删除*/
+    function adminUserDel(id) {
+        layer.confirm('确认要删除吗？只能删除被禁用用户。', function (index) {
+            var formData = {
+                id: id,
+            };
+            ajaxCommon("{:url('manage/AdminUser/del', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            });
+        });
+    }
+    
+    /*更改显示*/
+    function changeStatus(id) {
+        layer.confirm('确认要更改吗？', function (index) {
+            var formData = {
+                id: id,
+            };
+            ajaxCommon("{:url('manage/AdminUser/changeStatus', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            });
+        });
+    }
+</script>
+
+<script>
+    // 搜索
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        //监听提交
+        form.on('submit(search)', function (data) {
+            var table = layui.table;
+            table.reload('admin-user-list', {
+                where: data.field,
+                page: {
+                    curr: 1 //重新从第 1 页开始
+                },
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+    });
+</script>
+<script>
+    //监听单元格编辑
+    layui.use('table', function () {
+        var table = layui.table;
+        table.on('edit(admin-user-list)', function (obj) {
+            var value = obj.value //得到修改后的值
+                , data = obj.data //得到所在行所有键值
+                , field = obj.field; //得到字段
+            var formData = {
+                id: data.id,
+            };
+            formData[field] = value;
+            ajaxCommon("{:url('manage/AdminUser/viewEdit', [], '', true)}", formData, 'post', function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            }, function (result) {
+                setTimeout(function () {
+                    window.location.reload();
+                }, 1000);
+            });
+        })
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

@@ -1,0 +1,281 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/Cate/doSave')}" method="post" lay-filter="cateSave">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="cate_id" value="{$cateId}">
+            </div>
+            <div class="layui-form-item layui-row">
+                <label for="cate_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>分类名称
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="cate_title" name="cate_title" lay-verify="required" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>分类名称，长度为2-6字符
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="cate_description" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>分类描述
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" name="cate_description" maxlength="30" placeholder="请填写分类描述（30字以内），非必填" id="cate_description"
+                              cols="24" rows="5" autocomplete="off" style="resize: none"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>分类描述（30字以内），非必填
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="cate_tag" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>标签
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" name="cate_tag" id="cate_tag" placeholder="首页查询时关键字(30字以内)，英文逗号(,)分割。非必填" cols="24" rows="5"
+                              maxlength="30" autocomplete="off" style="resize: none"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>首页查询时关键字(30字以内)，英文逗号(,)分割。非必填
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="cate_sort" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>排序
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="cate_sort" name="cate_sort" lay-verify="required|cate_sort" autocomplete="off"
+                           class="layui-input" value="10" min="1" max="99999">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>数值越大越靠前,最大为：99999
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="cate_icon" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>图标
+                </label>
+                <div class="layui-upload">
+                    <button type="button" class="layui-btn layui-col-xs-offset1" id="up-cate-icon">上传图片</button>
+                    <div class="layui-col-md5">
+                        <img height="80px" class="layui-upload-img" src="">
+                        <input type="hidden" lay-verify="required" name="cate_icon" id="cate_icon" value="">
+                        <input type="hidden" name="cate_icon_url" id="cate-icon-url" value="">
+                    </div>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="cate_rebate_rate" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>分类返利比
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="cate_rebate_rate" name="cate_rebate_rate" lay-verify="required|cate_rebate_rate" autocomplete="off"
+                           class="layui-input" value="0" min="0" max="30">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-30；计算公式为：支付金额*比例%。0为不打折
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label class="layui-form-label layui-col-md3">显示在首页</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="cate_is_show" lay-skin="switch" lay-filter="switch" lay-text="开|关" value="0">
+                </div>
+            </div>
+            
+            <!--折扣率设置，不再在分类设置折扣-->
+            <!--<div class="layui-form-item layui-row">
+                <label for="vip_1_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>vip1折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="vip_1_discount" name="vip_1_discount" lay-verify="required"
+                           autocomplete="off" class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>vip1购买此分类物品的折扣
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="vip_2_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>vip2折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="vip_2_discount" name="vip_2_discount" lay-verify="required"
+                           autocomplete="off" class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>vip2购买此分类物品的折扣
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="vip_3_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>vip3折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="vip_3_discount" name="vip_3_discount" lay-verify="required"
+                           autocomplete="off" class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>vip3购买此分类物品的折扣
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="vip_4_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>vip4折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="vip_4_discount" name="vip_4_discount" lay-verify="required"
+                           autocomplete="off" class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>vip4购买此分类物品的折扣
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="vip_5_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>vip5折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="vip_5_discount" name="vip_5_discount" lay-verify="required"
+                           autocomplete="off" class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>vip5购买此分类物品的折扣
+                </div>
+            </div>-->
+            
+            <div class="layui-row">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+    
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    window.onload = function () {
+        upFile('#up-cate-icon', "{:url('Open/UpFile/upload')}", global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+        $(function () {
+            if ($('#cate-icon-url').val()) {
+                $('.layui-upload-img').attr('src', $('#cate-icon-url').val());
+            }
+        });
+    };
+</script>
+<script>
+    layui.use(['form', 'layer'], function () {
+        $ = layui.jquery;
+        var form = layui.form
+            , layer = layui.layer;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("cateSave", JSON.parse('{:urldecode($data)}'));
+
+        //自定义验证规则
+        form.verify({
+            nikename: function (value) {
+                if (value.length < 5) {
+                    return '昵称至少得5个字符啊';
+                }
+            }
+            , pass: [/(.+){6,12}$/, '密码必须6到12位']
+            , repass: function (value) {
+                if ($('#L_pass').val() != $('#L_repass').val()) {
+                    return '两次密码不一致';
+                }
+            },
+            cate_sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            },
+            cate_rebate_rate: function (value) {
+                if (value < 0 || value > 30) {
+                    return '返利比例需要在1-30之间, 0为不打折';
+                }
+            },
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

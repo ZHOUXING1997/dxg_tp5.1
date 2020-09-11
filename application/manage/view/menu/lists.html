@@ -1,0 +1,117 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .x-so {
+        margin-bottom: 0 !important;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <div class="layui-row">
+        <form class="layui-form layui-col-md12 x-so layui-form-pane">
+            <input class="layui-input" placeholder="菜单名" name="cate_name">
+            <button class="layui-btn" lay-submit="" lay-filter="sreach"><i class="layui-icon"></i>搜索</button>
+        </form>
+    </div>
+    
+    <table class="layui-table layui-form">
+        <thead>
+        <tr>
+            <th width="70">ID</th>
+            <th>菜单名</th>
+            <th>url</th>
+            <th>参数</th>
+            <th width="50">排序</th>
+            <th width="220">操作</th>
+        </thead>
+        <tbody class="x-cate">
+        {if $menus != []}
+        {foreach $menus as $menu}
+        <tr cate-id='{$menu.id}' fid='{$menu.pid}'>
+            <td>{$menu.id}</td>
+            <td>
+                {if $menu.type != 1}
+                <i class="layui-icon x-show" status='true'>&#xe623;</i>
+                {/if}
+                {$menu.name}
+            </td>
+            <td>
+                {$menu.url|default='一级菜单'}
+            </td>
+            <td>
+                {$menu.param|default='无'}
+            </td>
+            <td>
+                {$menu.order}
+            </td>
+            <td class="td-manage">
+                <button class="layui-btn layui-btn layui-btn-xs"
+                        onclick="x_admin_show('编辑', '{:url('manage/menu/edit', ['id' => $menu.id])}')"><i
+                        class="layui-icon">&#xe642;</i>编辑
+                </button>
+                <button class="layui-btn-danger layui-btn layui-btn-xs" onclick="member_del(this,{$menu.id})"
+                        href="javascript:;"><i class="layui-icon">&#xe640;</i>删除
+                </button>
+            </td>
+        </tr>
+        {/foreach}
+        {/if}
+        </tbody>
+    </table>
+    <div class="page" style="margin-top: 20px;">
+        {$page}
+    </div>
+</div>
+<script>
+    layui.use(['form'], function () {
+        form = layui.form;
+
+    });
+
+
+    /*用户-删除*/
+    function member_del(obj, id) {
+        layer.confirm('确认要删除吗？', function (index) {
+            //发异步删除数据
+
+            $.post("{:url('manage/menu/del')}", {id: id}, function (res) {
+                if (res.code == 0) {
+                    $(obj).parents("tr").remove();
+                    layer.msg('已删除!', {icon: 1, time: 1000});
+                } else {
+                    layer.msg(res.msg, {time: 2000});
+                }
+            }, 'json');
+
+        });
+    }
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

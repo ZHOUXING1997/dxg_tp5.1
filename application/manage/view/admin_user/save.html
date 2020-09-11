@@ -1,0 +1,233 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/AdminUser/doSave')}" method="post" lay-filter="adminUserSave">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="id" value="{$id}">
+                <input type="hidden" name="is_pass" value="">
+                <input type="hidden" name="curr_sex" value="">
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_login" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>用户名
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="user_login" name="user_login" lay-verify="required|user_login" autocomplete="off" class="layui-input" placeholder="请输入用户名">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>将作为唯一登录键名
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_nickname" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>昵称
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="user_nickname" name="user_nickname" lay-verify="required|nickname" autocomplete="off" class="layui-input" placeholder="请输入昵称">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>用户昵称
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_pass" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>密码
+                </label>
+                <div class="layui-col-md5">
+                    <input type="password" id="user_pass" name="user_pass" lay-verify="required|pass" autocomplete="off" class="layui-input" placeholder="请输入密码">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>登录密码，最少6位
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_email" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>邮箱
+                </label>
+                <div class="layui-col-md5">
+                    <input type="email" id="user_email" name="user_email" lay-verify="user_email" autocomplete="off" class="layui-input" placeholder="请输入邮箱，可为空">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>登录密码，最少6位
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="sex" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>性别
+                </label>
+                <div class="layui-col-md5">
+                    <input id="sex" type="radio" name="sex" value="0" title="保密" checked>
+                    <input type="radio" name="sex" value="1" title="男">
+                    <input type="radio" name="sex" value="2" title="女">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>性别，默认保密
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="sex" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>是否启用
+                </label>
+                <div class="layui-col-md5">
+                    <input type="checkbox" checked name="user_status" lay-skin="switch" lay-filter="switch" lay-text="启用|禁用" value="1">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>是否可用，默认启用
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset5">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+    
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use(['form', 'layer', 'laydate'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("adminUserSave", JSON.parse('{:urldecode($data)}'));
+
+        formRender(form);
+        
+        //自定义验证规则
+        form.verify({
+            user_login: function(value) {
+                if(value.length > 20){
+                    return '用户名最多20个字符';
+                }
+            },
+            nickname: function(value) {
+                if(value.length < 2){
+                    return '昵称至少得2个字符啊';
+                }
+                if(value.length > 10){
+                    return '昵称最多10个字符';
+                }
+            },
+            pass: function (value) {
+                if (value) {
+                    var reg = /(.+){6,15}$/;
+                    if(!reg.test(value)){
+                        return '密码必须6到15位';
+                    }
+                }
+            },
+            user_email: function (value) {
+                if (value) {
+                    var reg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                    if(!reg.test(value)){
+                        return '邮箱格式不正确';
+                    }
+                }
+            },
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+
+        laydate.render({
+            elem: '#start_t',
+            min: new Date().toLocaleString(),
+        });
+
+        laydate.render({
+            elem: '#end_t',
+            min: new Date().toLocaleString() + 1,
+        });
+
+        laydate.render({
+            elem: '#start_time',
+            type: "time",
+        });
+
+        laydate.render({
+            elem: '#end_time',
+            type: "time",
+        });
+    });
+
+</script>
+<script>
+    function formRender (form) {
+        if ($("input[name='is_pass']").val()) {
+            var userPass = $("input[name='user_pass']");
+            userPass.attr('placeholder', '如果不修改，可为空');
+            userPass.attr('lay-verify', 'pass');
+        }
+    }
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

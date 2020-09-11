@@ -1,0 +1,427 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .select-item {
+        display: none;
+    }
+    .layui-form-pane .layui-form-label {
+        width: 200px;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/Activity/doSave')}" method="post"
+          lay-filter="activitySave">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="activity_id" value="{$activityId}">
+                <input type="hidden" name="activity_status" value="{$data.activity_status|default=0}">
+            </div>
+    
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset4">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+            
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_type" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>活动类型
+                </label>
+                <div class="layui-col-md5">
+                    <input id="activity_type" lay-filter="activity_type" type="radio" name="activity_type" value="0" title="宣传活动" >
+                    <input type="radio" lay-filter="activity_type" name="activity_type" value="1" title="商品活动">
+                    <input type="radio" lay-filter="activity_type" name="activity_type" value="2" title="分类活动">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>活动类型，商品，分类，都只能关联一个活动。也可作为宣传活动
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row activity_correlation">
+                <label for="activity_url" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>
+                    <span class="activity_correlation_label">活动地址</span>
+                </label>
+                <div class="layui-col-md5 activity_correlation_content">
+                    <div class="select-item act-url">
+                        <input class="layui-input" autocomplete="off" type="url" name="activity_url" id="activity_url" value="" placeholder="宣传活动的外部链接">
+                    </div>
+                    <div class="select-item pro-id">
+                        <select name="product_id" xm-select="product-lists" xm-select-search="">
+                            <option value="" disabled>请选择商品，可进行搜索</option>
+                        </select>
+                    </div>
+                    <div class="select-item cate-id">
+                        <select name="cate_id" xm-select="cate-lists" xm-select-search="" xm-select-radio>
+                            <option value="" disabled>请选择分类，可进行搜索</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span><span class="activity_correlation_tips">可以为商品货号或宣传活动的外部链接</span>
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>活动名称
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="activity_name" name="activity_name" lay-verify="required" autocomplete="off"
+                           class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-20个字符
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_start_time" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>开始时间
+                </label>
+                <div class="layui-col-md5">
+                    <input class="layui-input input-laydate" autocomplete="off" placeholder="选择日期" name="activity_start_time"
+                           id="activity_start_time">
+                    
+                    <!--<input class="layui-input layui-input-inline input-laydate-time" autocomplete="off" placeholder="选择时间" name="start_time" id="start_time">-->
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>大于现在时间5分钟后
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_end_time" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>结束时间
+                </label>
+                <div class="layui-col-md5">
+                    <input class="layui-input input-laydate" autocomplete="off" placeholder="选择日期" name="activity_end_time"
+                           id="activity_end_time">
+                    
+                    <!--<input class="layui-input layui-input-inline input-laydate-time" autocomplete="off" placeholder="选择时间" name="end_time" id="end_time">-->
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>大于开始时间5分钟后
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="activity_sort" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>排序
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="activity_sort" name="activity_sort" lay-verify="required|sort" autocomplete="off"
+                           class="layui-input" value="10" min="1" max="99999">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>数值越大越靠前,最大为：99999
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row act-discount">
+                <label for="activity_discount" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>活动折扣
+                </label>
+                <div class="layui-col-md5">
+                    <input type="number" id="activity_discount" name="activity_discount" lay-verify="required|activity_discount|max:99|min:0" autocomplete="off"
+                           class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-99；计算公式为：价格*折扣%。0为不打折
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_limit_num" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>活动可购买数量
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="activity_limit_num" name="activity_limit_num" lay-verify="required|limit_num" autocomplete="off"
+                           class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-99999999；0为不限制
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_user_limit_num" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>单用户可购买数量
+                </label>
+                <div class="layui-col-md5">
+                    <input type="text" id="activity_user_limit_num" name="activity_user_limit_num" lay-verify="required|limit_num" autocomplete="off"
+                           class="layui-input" value="0">
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>1-99999999；0为不限制，商品活动指的为单商品，分类活动为分类下单商品数量
+                </div>
+            </div>
+    
+            <div class="layui-form-item layui-row">
+                <label for="activity_cover_img" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>封面图
+                </label>
+                <div class="layui-upload">
+                    <button type="button" class="layui-btn layui-col-xs-offset1" id="up-cover-img">上传图片</button>
+                    <div class="upload-img layui-col-md5">
+                        <img height="80px" class="cover-img" src="">
+                        <input type="hidden" lay-verify="required" name="activity_cover_img" id="activity_cover_img" value="">
+                    </div>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_rule" class="layui-form-label layui-col-md3">
+                    <span class="x-red">*</span>活动规则
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" id="activity_rule" name="activity_rule" maxlength="30" lay-verify="required"
+                              placeholder="请输入不少于10个字符，100字符以内的规则介绍" cols="24" rows="5" autocomplete="off"
+                              style="resize: none"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red">*</span>请输入不少于10个字符，100字符以内的规则介绍
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="activity_note" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>活动备注
+                </label>
+                <div class="layui-col-md5">
+                    <textarea class="layui-textarea" id="activity_note" name="activity_note" maxlength="30" lay-verify=""
+                              placeholder="请输入活动备注(30字以内)。非必填" cols="24" rows="5" autocomplete="off"
+                              style="resize: none"></textarea>
+                </div>
+                <div class="layui-form-mid layui-word-aux layui-col-md-offset1">
+                    <span class="x-red"></span>请输入30字以内的活动备注
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset4">
+                    <button id="submit" type="button" class="layui-btn" lay-filter="save" lay-submit="">
+                        提交
+                    </button>
+    
+                    <button type="button" class="layui-btn layui-btn-danger" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    window.onload = function () {
+        // 单图上传，封面
+        // elem, url, fileSize, accept, acceptMime, suffix
+        upFile('#up-cover-img', "{:url('Open/UpFile/upload')}", global.up_file_option.up_file_default_size_max, global.up_file_option.up_file_images_accept, global.up_file_option.up_image_default_acceptMime, global.up_file_option.up_image_default_suffix);
+    };
+</script>
+<script>
+    layui.use(['layer', 'formSelects'], function () {
+        $ = layui.jquery;
+        var layer = layui.layer,
+            formSelects = layui.formSelects;
+
+        formSelects.render('product-lists', {
+            max: global.activity.product_num_max,
+        });
+        formSelects.data('product-lists', 'local', {
+            arr: JSON.parse('{:json_encode($productLists)}')
+        }).maxTips('product-lists', function () {
+            layer.msg('商品最多可选' + global.activity.product_num_max + '个！！！', {icon: 7, time: 2000});
+        });
+
+        formSelects.data('cate-lists', 'local', {
+            arr: JSON.parse('{:json_encode($cateLists)}')
+        });
+    });
+</script>
+<script>
+    layui.use(['form', 'layer', 'laydate'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            laydate = layui.laydate;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        let formData = JSON.parse('{:json_encode($data)}');
+        
+        if (formData == null) {
+            formData = {activity_type: '0'};
+        } else {
+            $('.cover-img').attr('src', formData['activity_cover_img_url']);
+        }
+        
+        form.val("activitySave", formData);
+        
+        // select 选项
+        changeActCorrelation(form, formData.activity_type);
+        
+        //自定义验证规则
+        form.verify({
+            activity_discount: function (value) {
+                if (value < 0 || value > 99) {
+                    return '折扣需要在1-99之间, 0为不打折';
+                }
+            },
+            limit_num: function (value) {
+                if (value < 0 || value > 99999999) {
+                    return '购买数量请在1-99999，0为不限制';
+                }
+            },
+            stock: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '库存数值请在1-99999';
+                }
+            },
+            sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            }
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            if (data.field.activity_type != 0) {
+                data.field.activity_url = '';
+            }
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+
+        form.on('radio(activity_type)', function(data){
+            changeActCorrelation(form, data.value);
+            // console.log(data.elem); //得到radio原始DOM对象
+            // console.log(data.value); //被点击的radio的value值
+        });
+
+        form.on('select(filter)', function(data){
+            alert('11');
+            console.log(data.elem); //得到select原始DOM对象
+            console.log(data.value); //得到被选中的值
+            console.log(data.othis); //得到美化后的DOM对象
+        });
+
+        /*lay('.input-laydate').each(function(){
+            laydate.render({
+                elem: this,
+                min: new Date().toLocaleString() + 1,
+                trigger: 'click'
+            });
+        });
+
+        lay('.input-laydate-time').each(function(){
+            laydate.render({
+                elem: this,
+                type: "time",
+                trigger: 'click'
+            });
+        });*/
+        lay('.input-laydate').each(function(){
+            laydate.render({
+                elem: this,
+                min: new Date().toLocaleString() + 1,
+                type: "datetime",
+                trigger: 'click'
+            });
+        });
+    });
+
+</script>
+<script>
+    function changeActCorrelation(form, val) {
+        var formItem = $('.activity_correlation');
+        
+        $('.act-discount').css('display', 'block');
+        $('.select-item').css('display', 'none');
+        if (val == 0) {
+            // 修改label
+            formItem.find('span.activity_correlation_label').text('活动地址');
+            // 修改提示
+            formItem.find('span.activity_correlation_tips').text('宣传活动的外部链接');
+            $('.act-discount').css('display', 'none');
+            
+            $('.act-url').css('display', 'block');
+        } else if (val == 1) {
+            // 修改label
+            formItem.find('span.activity_correlation_label').text('活动商品');
+            // 修改提示
+            formItem.find('span.activity_correlation_tips').text('请选择商品');
+            
+            $('.pro-id').css('display', 'block');
+        } else if (val == 2) {
+            // 修改label
+            formItem.find('span.activity_correlation_label').text('活动分类');
+            // 修改提示
+            formItem.find('span.activity_correlation_tips').text('请选择分类');
+            
+            $('.cate-id').css('display', 'block');
+        }
+        
+        form.render('select', 'activitySave');
+    }
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

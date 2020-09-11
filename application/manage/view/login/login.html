@@ -1,0 +1,77 @@
+{extend name="common/tpl_layout" /}
+
+<!--标题-->
+{block name="title"}动心阁后台登录{/block}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+    {include file='manage@common/include_custom_head' /}
+<style>
+    .captcha-img {
+        height: 50px;
+        width: 125px;
+        font-size: 20px;
+        cursor: pointer;
+        position:absolute;
+        right: 40px;
+        bottom: 123px;
+        border-radius: 0 3px 3px 0;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="login-bg" style="height: 100%;">
+<div class="login layui-anim layui-anim-up">
+    <div class="message">管理登录</div>
+    <div id="darkbannerwrap"></div>
+
+    <form method="post" class="layui-form" action="{:url('manage/login/doLogin')}">
+        <input name="username" placeholder="用户名" type="text" lay-verify="required" class="layui-input">
+        <hr class="hr15">
+        <input name="password" lay-verify="required" placeholder="密码" type="password" class="layui-input" >
+        <hr class="hr15">
+        <input name="captcha" lay-verify="required" placeholder="验证码" type="text" class="layui-input" >
+
+        <div>
+            <img class="captcha-img" src="{:captcha_src()}" alt="captcha" onclick="this.src='{:captcha_src()}'+'?'+Math.random()"/>
+        </div>
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+
+        <hr class="hr15">
+        <input value="登录" lay-submit lay-filter="login" style="width:100%;" type="submit">
+        <hr class="hr20">
+    </form>
+</div>
+</div>
+<script>
+    $(function () {
+        layui.use('form', function () {
+            var form = layui.form;
+            //监听提交
+            form.on('submit(login)', function (data) {
+                formAjax (data,
+                    function (data) {
+                        window.parent.location.reload();
+                    }, function (data) {
+                        $('.captcha-img').trigger("click");
+                        $("input[name='captcha']").val('');
+                    });
+                return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+            });
+        });
+    });
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

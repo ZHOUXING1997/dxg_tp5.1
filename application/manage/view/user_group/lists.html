@@ -1,0 +1,172 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+  // 是否开启刷新记忆tab功能
+  // var is_remember = false;
+</script>
+<style>
+  .x-so {
+    margin-bottom: 0 !important;
+  }
+  
+  .layui-form-pane .layui-form-label{
+    width: 300px;
+  }
+  .layui-input, .layui-textarea{
+    width: 120%
+  }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+  <xblock>
+    <button class="layui-btn" onclick="x_admin_show('添加分组','add')"><i class="layui-icon"></i>添加角色</button>
+  </xblock>
+  <table class="layui-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>角色名</th>
+        <th>权限类型</th>
+        <th>描述</th>
+        <th>状态</th>
+        <th>操作</th>
+    </thead>
+    <tbody>
+      {if $groups != []}
+          {foreach $groups as $group}
+            <tr>
+              <td>{$group.id}</td>
+              <td>{$group.name}</td>
+              <td>
+                {if $group.type == 1}
+                  普通权限
+                {else/}
+                  最高权限
+                {/if}
+              </td>
+              <td>{$group.desc}</td>
+              <td class="td-status">
+                {if $group.status == 1}
+                <span class="layui-btn layui-btn-normal layui-btn-mini">已启用</span></td>
+                {else/}
+                <span class="layui-btn layui-btn-normal layui-btn-disabled layui-btn-mini">已停用</span>
+                {/if}
+              </td>
+              <td class="td-manage">
+                {if $group.status == 1}
+                <a onclick="member_status(this, {$group.id})" href="javascript:;"  title="停用">
+                  <i class="layui-icon">&#xe601;</i>
+                </a>
+                {else/}
+                <a onclick="member_status(this, {$group.id})" href="javascript:;"  title="启用">
+                  <i class="layui-icon">&#xe62f;</i>
+                </a>
+                {/if}
+
+                <a title="编辑"  onclick="x_admin_show('编辑','edit?id={$group.id}')" href="javascript:;">
+                  <i class="layui-icon">&#xe642;</i>
+                </a>
+                <a title="删除" onclick="member_del(this, {$group.id})" href="javascript:;">
+                  <i class="layui-icon">&#xe640;</i>
+                </a>
+              </td>
+            </tr>
+          {/foreach}
+      {/if}
+    </tbody>
+  </table>
+
+</div>
+<script>
+  layui.use('laydate', function(){
+    var laydate = layui.laydate;
+
+    //执行一个laydate实例
+    laydate.render({
+      elem: '#start' //指定元素
+    });
+
+    //执行一个laydate实例
+    laydate.render({
+      elem: '#end' //指定元素
+    });
+  });
+
+  /*角色-停用*/
+  function member_status(obj,id){
+      if($(obj).attr('title')=='停用') {
+          layer.confirm('确认要停用吗？',function(index){
+            $.post("{:url('manage/userGroup/changeStatus')}", {id:id, status:2},function(res){
+                if(res.code == 0){
+                  $(obj).attr('title','启用')
+                  $(obj).find('i').html('&#xe62f;');
+                  $(obj).parents("tr").find(".td-status").find('span').addClass('layui-btn-disabled').html('已停用');
+                  layer.msg('已停用!',{icon: 5,time:1000});
+                }else{
+                    layer.msg(res.msg, {time: 2000});
+                }
+            }, 'json');
+          });
+      } else {
+          layer.confirm('确认要启用吗？',function(index){
+
+              $.post("{:url('manage/userGroup/changeStatus')}", {id:id, status:1},function(res){
+                  if(res.code == 0){
+                    $(obj).attr('title','停用')
+                    $(obj).find('i').html('&#xe601;');
+
+                    $(obj).parents("tr").find(".td-status").find('span').removeClass('layui-btn-disabled').html('已启用');
+                    layer.msg('已启用!',{icon: 5,time:1000});
+                  }else{
+                      layer.msg(res.msg, {time: 2000});
+                  }
+              }, 'json');
+
+          });
+      }
+
+  }
+
+
+  /*角色 -删除*/
+  function member_del(obj,id){
+      layer.confirm('确认要删除吗？',function(index){
+          //发异步删除数据
+          $.post("{:url('manage/userGroup/del')}", {id:id},function(res){
+              if(res.code == 0){
+
+                $(obj).parents("tr").remove();
+                layer.msg('已删除!',{icon:1,time:1000});
+              }else{
+                  layer.msg(res.msg, {time: 2000});
+              }
+          }, 'json');
+
+      });
+  }
+</script>
+{/block}
+
+{block name="footer"}
+{/block}

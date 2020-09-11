@@ -1,0 +1,245 @@
+{extend name="common/tpl_layout" /}
+
+<!--编码格式-->
+{block name='charset'}UTF-8{/block}
+
+<!--自定义meta-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+{/block}
+
+<!--自定义header-->
+{block name="custom_head"}
+{include file='manage@common/include_custom_head' /}
+<script type="text/javascript" src="https://cdn.bootcss.com/blueimp-md5/2.10.0/js/md5.min.js"></script>
+<meta http-equiv="Cache-Control" content="no-siteapp"/>
+<meta name="renderer" content="webkit|ie-comp|ie-stand">
+<script>
+    // 是否开启刷新记忆tab功能
+    // var is_remember = false;
+</script>
+<style>
+    .layui-container label {
+        width: 200px !important;
+    }
+</style>
+{/block}
+
+{block name="header"}
+{/block}
+{block name="sidebar"}
+{/block}
+
+<!--主体内容-->
+{block name="content"}
+<div class="x-body">
+    <form class="layui-form layui-form-pane" action="{:url('Manage/Activity/doSave')}" method="post" lay-filter="addressInfo">
+        <div class="layui-container">
+            <div class="hidden-input">
+                <input type="hidden" name="address_id" value="{$addressId}">
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="user_nickname" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>所属用户
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="user_nickname" name="user_nickname" lay-verify="required" autocomplete="off" class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_addressee" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>收件人
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_addressee" name="address_addressee" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_mobile" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>联系方式
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_mobile" name="address_mobile" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_province_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>省
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_province_name" name="address_province_name" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_city_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>市
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_city_name" name="address_city_name" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_district_name" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>区/县
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_district_name" name="address_district_name" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_detailed" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>详细地址
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_detailed" name="address_detailed" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_default_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>是否为默认
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_default_title" name="address_default_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_status_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>状态
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_status_title" name="address_status_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_perfect_title" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>是否完善
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_perfect_title" name="address_perfect_title" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item layui-row">
+                <label for="address_create_time" class="layui-form-label layui-col-md3">
+                    <span class="x-red"></span>创建时间
+                </label>
+                <div class="layui-col-md8">
+                    <input type="text" id="address_create_time" name="address_create_time" lay-verify="required|price" autocomplete="off"
+                           class="layui-input">
+                </div>
+            </div>
+            
+            <div class="layui-form-item">
+                <div class="layui-col-md-offset5">
+                    <button type="button" class="layui-btn layui-btn-normal" onclick="x_admin_close()">
+                        关闭
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    layui.use(['form', 'layer', 'laydate'], function () {
+        $ = layui.jquery;
+        var form = layui.form,
+            layer = layui.layer,
+            laydate = layui.laydate;
+
+        //formTest 即 class="layui-form" 所在元素对应的 lay-filter="" 对应的值
+        form.val("addressInfo", JSON.parse('{:urldecode($data)}'));
+        $("input").attr('readonly', true).attr('disabled', true);
+        form.render();
+
+        //自定义验证规则
+        form.verify({
+            price: function (value) {
+                if (value < 1 || value > 999999) {
+                    return '价格需要在1-999999之间';
+                }
+            },
+            sort: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '排序数值请在1-99999';
+                }
+            },
+            stock: function (value) {
+                if (value < 1 || value > 99999) {
+                    return '库存数值请在1-99999';
+                }
+            },
+        });
+
+        //监听提交
+        form.on('submit(save)', function (data) {
+            formAjax(data,
+                function (result) {
+                    console.log('成功');
+                    setTimeout(function () {
+                        window.parent.location.reload();
+                    }, 2000)
+                }, function (result) {
+                    console.log('失败');
+                    // setTimeout(function () {
+                    //     window.parent.location.reload();
+                    // }, 2000)
+                });
+            return false;
+        });
+
+        //监听指定开关
+        form.on('switch(switch)', function (data) {
+            console.log(this.checked);
+            if (this.checked) {
+                $(this).attr('type', 'hidden').val('1');
+            } else {
+                $(this).attr('type', 'hidden').val('0');
+            }
+        });
+
+        laydate.render({
+            elem: '#start_t',
+            min: new Date().toLocaleString(),
+        });
+
+        laydate.render({
+            elem: '#end_t',
+            min: new Date().toLocaleString() + 1,
+        });
+
+        laydate.render({
+            elem: '#start_time',
+            type: "time",
+        });
+
+        laydate.render({
+            elem: '#end_time',
+            type: "time",
+        });
+    });
+
+</script>
+{/block}
+
+{block name="footer"}
+{/block}
